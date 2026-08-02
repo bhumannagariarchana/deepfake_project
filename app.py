@@ -48,12 +48,13 @@ def run_ssh_tunnel_background():
             text=True
         )
         for line in iter(proc.stdout.readline, ""):
-            match = re.search(r"https://\S+", line)
-            if match:
-                url = match.group(0).strip().rstrip(".")
-                with open(tunnel_url_file, "w") as f:
-                    f.write(url)
-                print(f"✓ Public SSH Tunnel URL Active: {url}")
+            if "tunneled with" in line:
+                match = re.search(r"https://\S+", line)
+                if match:
+                    url = match.group(0).strip().rstrip(".")
+                    with open(tunnel_url_file, "w") as f:
+                        f.write(url)
+                    print(f"✓ Public SSH Tunnel URL Active: {url}")
     except Exception as e:
         print(f"Failed to start background SSH tunnel: {e}")
 
