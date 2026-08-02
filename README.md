@@ -1,5 +1,7 @@
 # Multi-Modal Liveness Verification & Deepfake Face Authentication System
 
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-10b981?logo=github&logoColor=white)](https://github.com/bhumannagariarchana/deepfake_project)
+
 This project implements a complete binary **Liveness Verification (Module 1)** and **AI-Based Deepfake Detection (Module 2)** system designed for secure face-based access control.
 
 ---
