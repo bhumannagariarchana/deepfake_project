@@ -1,12 +1,13 @@
 import cv2
 import mediapipe as mp
+import mediapipe.solutions.face_mesh as mp_face_mesh
 import numpy as np
 
 class FaceDetector:
     def __init__(self, min_detection_confidence=0.5, min_tracking_confidence=0.5):
         # We use MediaPipe Face Mesh because it gives detailed landmarks
         # which we use for face alignment and liveness detection in one pass.
-        self.mp_face_mesh = mp.solutions.face_mesh
+        self.mp_face_mesh = mp_face_mesh
         self.face_mesh = self.mp_face_mesh.FaceMesh(
             static_image_mode=False,
             max_num_faces=1,
