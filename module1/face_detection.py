@@ -1,6 +1,9 @@
 import cv2
 import mediapipe as mp
-import mediapipe.solutions.face_mesh as mp_face_mesh
+try:
+    import mediapipe.solutions.face_mesh as mp_face_mesh
+except (ModuleNotFoundError, AttributeError):
+    mp_face_mesh = mp.solutions.face_mesh
 import numpy as np
 
 class FaceDetector:
