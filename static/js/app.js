@@ -119,8 +119,8 @@ async function startWebcam() {
             canvasOverlay.width = webcam.videoWidth;
             canvasOverlay.height = webcam.videoHeight;
             
-            // Start the frame capture-send loop (~12 FPS)
-            frameSendInterval = setInterval(sendFrameToServer, 85);
+            // Start the frame capture-send loop sequentially
+            runFrameCaptureLoop();
             
             // Reset backend state
             fetch('/reset_verification', { method: 'POST' });
@@ -129,6 +129,19 @@ async function startWebcam() {
         console.error('Webcam access error:', err);
         alert('Webcam access is required for liveness verification.');
         restartAuth();
+    }
+}
+
+// Sequential frame capture loop to prevent network congestion
+async function runFrameCaptureLoop() {
+    if (!sessionState.streamActive) return;
+    try {
+        await sendFrameToServer();
+    } catch (err) {
+        console.error("Frame loop error:", err);
+    }
+    if (sessionState.streamActive) {
+        setTimeout(runFrameCaptureLoop, 80);
     }
 }
 
