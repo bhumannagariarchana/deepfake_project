@@ -2,7 +2,9 @@ import os
 import sys
 import json
 import time
+import re
 import threading
+import subprocess
 import streamlit as st
 from PIL import Image
 
@@ -26,6 +28,39 @@ if not any(thread.name == flask_thread_name for thread in threading.enumerate())
     t = threading.Thread(target=run_flask_background, name=flask_thread_name, daemon=True)
     t.start()
     time.sleep(1)
+
+# 2. Background SSH Tunnel Manager (for Streamlit Cloud deployment)
+tunnel_url_file = os.path.join(OUTPUTS_DIR, "tunnel_url.txt")
+
+def run_ssh_tunnel_background():
+    # Remove previous tunnel URL file to ensure fresh detection
+    if os.path.exists(tunnel_url_file):
+        try:
+            os.remove(tunnel_url_file)
+        except Exception:
+            pass
+
+    try:
+        proc = subprocess.Popen(
+            ["ssh", "-o", "StrictHostKeyChecking=no", "-R", "80:127.0.0.1:5001", "nokey@localhost.run"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        for line in iter(proc.stdout.readline, ""):
+            match = re.search(r"https://\S+", line)
+            if match:
+                url = match.group(0).strip().rstrip(".")
+                with open(tunnel_url_file, "w") as f:
+                    f.write(url)
+                print(f"✓ Public SSH Tunnel URL Active: {url}")
+    except Exception as e:
+        print(f"Failed to start background SSH tunnel: {e}")
+
+ssh_thread_name = "SSHBackgroundTunnel"
+if not any(thread.name == ssh_thread_name for thread in threading.enumerate()):
+    t_ssh = threading.Thread(target=run_ssh_tunnel_background, name=ssh_thread_name, daemon=True)
+    t_ssh.start()
 
 # Streamlit Page Config
 st.set_page_config(
@@ -56,6 +91,17 @@ def load_json_file(file_path):
                 return None
     return None
 
+def get_iframe_url():
+    if os.path.exists(tunnel_url_file):
+        try:
+            with open(tunnel_url_file, "r") as f:
+                url = f.read().strip()
+                if url.startswith("https://"):
+                    return url
+        except Exception:
+            pass
+    return "http://localhost:5001"
+
 # ==========================================
 # PAGE 1: FACE AUTHENTICATION PORTAL
 # ==========================================
@@ -63,8 +109,10 @@ if app_page == "🔐 Face Authentication Portal":
     st.subheader("🔐 Biometric Verification Interface")
     st.markdown("Complete the user login and the randomized active liveness challenges.")
 
-    # Embed real-time webcam liveness frame capture loop
-    st.components.v1.iframe("http://localhost:5001", height=700, scrolling=True)
+    # Embed real-time webcam liveness frame capture loop via local/public URL
+    iframe_url = get_iframe_url()
+    st.components.v1.iframe(iframe_url, height=700, scrolling=True)
+    st.caption(f"Service Endpoint: {iframe_url}")
 
     # Automatically check and render verification results below if available
     final_result = load_json_file(os.path.join(OUTPUTS_DIR, "final_result.json"))
