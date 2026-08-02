@@ -113,7 +113,7 @@ if app_page == "🔐 Face Authentication Portal":
     # Embed real-time webcam liveness frame capture loop via local/public URL
     iframe_url = get_iframe_url()
     st.components.v1.iframe(iframe_url, height=700, scrolling=True)
-    st.caption(f"Service Endpoint: {iframe_url}")
+
 
     # Automatically check and render verification results below if available
     final_result = load_json_file(os.path.join(OUTPUTS_DIR, "final_result.json"))
