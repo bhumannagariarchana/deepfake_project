@@ -101,7 +101,7 @@ def get_iframe_url():
                     return url
         except Exception:
             pass
-    return "http://localhost:5001"
+    return "http://127.0.0.1:5001"
 
 # ==========================================
 # PAGE 1: FACE AUTHENTICATION PORTAL
