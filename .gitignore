@@ -1,18 +1,12 @@
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
 .DS_Store
-.ipynb_checkpoints/
-.vscode/
-
-# Datasets
 datasets/
-
-# Large Model weights
-models/deepfake_detector.pth
-
-# Session Outputs
-outputs/aligned_face.jpg
-outputs/session.json
-outputs/final_result.json
+models/
+outputs/plots/
+outputs/*.jpg
+outputs/*.json
+outputs/*.pdf
+.system_generated/
+tasks/

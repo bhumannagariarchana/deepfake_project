@@ -38,14 +38,10 @@ st.set_page_config(
 # Application Header
 st.markdown("<h1 style='text-align: center; font-family: Outfit; font-weight: 800; color: #10b981; margin-bottom: 0px;'>🛡️ SECUREAUTH</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #9ca3af;'>Zero-Trust Liveness Verification & EfficientNet-B0 Deepfake Detection Suite</p>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #6b7280; font-size: 13px;'>Developed by: <b>bhumannagariarchana</b></p>", unsafe_allow_html=True)
 st.markdown("---")
 
 # Navigation Selector (Reduced from 4 tabs to 2 unified pages)
 st.sidebar.title("System Control")
-st.sidebar.markdown("**Author:** [bhumannagariarchana](https://github.com/bhumannagariarchana)")
-st.sidebar.markdown("[📁 View GitHub Repository](https://github.com/bhumannagariarchana/deepfake_liveness_system)")
-st.sidebar.markdown("---")
 app_page = st.sidebar.radio("Go to:", [
     "🔐 Face Authentication Portal",
     "⚙️ AI Developer Dashboard"
