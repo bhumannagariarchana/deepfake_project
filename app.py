@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import threading
+import subprocess
 import streamlit as st
 from PIL import Image
 
@@ -40,12 +41,17 @@ st.markdown("<h1 style='text-align: center; font-family: Outfit; font-weight: 80
 st.markdown("<p style='text-align: center; color: #9ca3af;'>Zero-Trust Liveness Verification & EfficientNet-B0 Deepfake Detection Suite</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Navigation Selector (Reduced from 4 tabs to 2 unified pages)
+# Navigation Selector
 st.sidebar.title("System Control")
 app_page = st.sidebar.radio("Go to:", [
     "🔐 Face Authentication Portal",
     "⚙️ AI Developer Dashboard"
 ])
+
+# Directly link to user's GitHub Repository in sidebar
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 📁 Version Control")
+st.sidebar.markdown("[🔗 GitHub Repository](https://github.com/bhumannagariarchana/deepfake_project)")
 
 def load_json_file(file_path):
     if os.path.exists(file_path):
@@ -55,6 +61,29 @@ def load_json_file(file_path):
             except Exception:
                 return None
     return None
+
+def run_git_push():
+    try:
+        # Run git push command with terminal prompts disabled to prevent hangs
+        env = os.environ.copy()
+        env["GIT_TERMINAL_PROMPT"] = "0"
+        
+        # Stage and commit any outstanding changes
+        subprocess.run(["git", "add", "."], check=True, cwd=PROJECT_DIR)
+        
+        # We check if there's anything to commit first
+        status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True, cwd=PROJECT_DIR)
+        if status.stdout.strip():
+            subprocess.run(["git", "commit", "-m", "Sync project from SecureAuth dashboard"], check=True, cwd=PROJECT_DIR)
+            
+        result = subprocess.run(["git", "push", "-u", "origin", "main"], capture_output=True, text=True, env=env, cwd=PROJECT_DIR)
+        
+        if result.returncode == 0:
+            return True, "✓ Pushed successfully! Code synced with GitHub."
+        else:
+            return False, result.stderr
+    except Exception as e:
+        return False, str(e)
 
 # ==========================================
 # PAGE 1: FACE AUTHENTICATION PORTAL
@@ -94,8 +123,43 @@ elif app_page == "⚙️ AI Developer Dashboard":
     st.subheader("⚙️ Model Training, Evaluation & Telemetry Dashboard")
     st.markdown("Manage model training runs, check performance metrics, and audit system telemetry logs.")
 
-    # Section 1: Model Training Suite
-    with st.expander("🏋️ EfficientNet-B0 Classifier Training", expanded=True):
+    # Section 1: GitHub Synchronization
+    with st.expander("🚀 GitHub Repository Synchronization (Git Sync)", expanded=True):
+        st.markdown("Sync the project codebase to your GitHub profile repository.")
+        
+        col_g1, col_g2 = st.columns(2)
+        with col_g1:
+            st.markdown("""
+            *   **Author Profile**: `bhumannagariarchana`
+            *   **Associated Email**: `bhumannagariarchana@gmail.com`
+            *   **GitHub Repository URL**: [https://github.com/bhumannagariarchana/deepfake_project](https://github.com/bhumannagariarchana/deepfake_project)
+            """)
+            
+            if st.button("🚀 Push and Sync Code to GitHub"):
+                with st.spinner("Executing Git commit & push commands..."):
+                    success, msg = run_git_push()
+                    if success:
+                        st.success(msg)
+                    else:
+                        st.error("Push failed! Please ensure you have completed the following steps:")
+                        st.markdown(f"""
+                        1. **Create Repository**: Go to GitHub and create an empty repository named `deepfake_project` on your profile:
+                           [Create new repository](https://github.com/new)
+                        2. **Authentication**: Make sure your local command line has access permissions to your GitHub account (macOS Keychain access).
+                        
+                        **Terminal Error Log:**
+                        ```text
+                        {msg}
+                        ```
+                        """)
+        with col_g2:
+            st.info("""
+            **Developer Tip**:
+            Our git configuration automatically ignores bulky datasets (`datasets/`) and large models (`models/deepfake_detector.pth`) to keep your repository lightweight and optimize upload speeds. Only source code scripts and PDF documentation reports are synced.
+            """)
+
+    # Section 2: Model Training Suite
+    with st.expander("🏋️ EfficientNet-B0 Classifier Training", expanded=False):
         col_t1, col_t2 = st.columns([1, 1])
         with col_t1:
             st.write("##### Training Hyperparameters")
@@ -131,7 +195,7 @@ elif app_page == "⚙️ AI Developer Dashboard":
             else:
                 st.warning("No performance curves found. Trigger a training run to render curves.")
 
-    # Section 2: Model Evaluation Metrics
+    # Section 3: Model Evaluation Metrics
     with st.expander("📊 Evaluation Metrics & Visual Forensics", expanded=False):
         if st.button("Evaluate Classifier on Test Set"):
             with st.spinner("Generating confusion matrices..."):
@@ -172,7 +236,7 @@ elif app_page == "⚙️ AI Developer Dashboard":
         else:
             st.warning("No evaluation metrics found. Please trigger 'Evaluate Classifier on Test Set'.")
 
-    # Section 3: Telemetry Logs
+    # Section 4: Telemetry Logs
     with st.expander("📝 Session JSON Logs", expanded=False):
         col_l1, col_l2 = st.columns(2)
         session_data = load_json_file(os.path.join(OUTPUTS_DIR, "session.json"))
