@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero-Trust Liveness & Deepfake Authentication Console</title>
+    <!-- Modern Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background Neon Gradients -->
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-shield">🛡️</span>
+                <span class="logo-text">SECURE<span class="logo-accent">AUTH</span></span>
+            </div>
+            <div class="system-status">
+                <span class="status-indicator live"></span>
+                <span class="status-text">Module 1: Zero-Trust Active</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- STEP 1: LOGIN SECTION -->
+            <section id="login-section" class="card active">
+                <div class="card-header">
+                    <h2>Secure Employee Portal</h2>
+                    <p class="subtitle">Please authenticate to gain system access. Multi-factor zero-trust checks will be triggered.</p>
+                </div>
+                <div class="card-body">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="username">Username or Employee ID</label>
+                            <input type="text" id="username" placeholder="e.g. admin or EMP101" required>
+                        </div>
+                        <div class="form-group" id="password-group">
+                            <label for="password">Password (Optional for EMP IDs)</label>
+                            <input type="password" id="password" placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="btn-start">
+                            <span>Start Verification</span>
+                            <span class="btn-arrow">→</span>
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <p class="demo-tip">💡 Demo Creds: <code>admin</code> / <code>admin123</code> or Employee ID <code>EMP101</code> (No password required for EMP IDs)</p>
+                </div>
+            </section>
+
+            <!-- STEP 2: LIVENESS CAMERA STREAM SECTION -->
+            <section id="liveness-section" class="card">
+                <div class="liveness-grid">
+                    <!-- Left: Camera Frame with Overlay -->
+                    <div class="camera-panel">
+                        <div class="camera-wrapper">
+                            <video id="webcam" autoplay playsinline muted></video>
+                            <canvas id="canvas-overlay"></canvas>
+                            
+                            <!-- Calibration Overlay -->
+                            <div id="calibration-overlay" class="overlay-msg active">
+                                <div class="spinner"></div>
+                                <h3>Calibrating Sensor</h3>
+                                <p>Please look straight at the camera and keep a neutral expression...</p>
+                                <div class="progress-bar-container">
+                                    <div id="calibration-progress" class="progress-bar-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Alert banners -->
+                            <div id="alert-banner" class="alert-banner hidden">
+                                <span id="alert-text">No face detected</span>
+                            </div>
+                        </div>
+
+                        <!-- Active Challenge Prompt -->
+                        <div class="challenge-prompt">
+                            <div class="prompt-header">CURRENT CHALLENGE</div>
+                            <h1 id="active-challenge-text">Looking Straight...</h1>
+                            <!-- Micro-progress indicator for active gesture -->
+                            <div class="active-progress-container">
+                                <div id="active-gesture-progress" class="active-progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Challenge Checklist & Session Status -->
+                    <div class="status-panel">
+                        <div class="panel-section">
+                            <h3>Session Details</h3>
+                            <div class="metadata-list">
+                                <div class="metadata-item">
+                                    <span class="meta-label">User ID:</span>
+                                    <span id="session-user-id" class="meta-val">-</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="meta-label">Session:</span>
+                                    <span id="session-id-display" class="meta-val">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-section">
+                            <h3>Challenge Sequence</h3>
+                            <p class="panel-tip">Perform the challenges below in order before the session timer expires.</p>
+                            <div id="challenge-list" class="checklist">
+                                <!-- Generated Dynamically -->
+                                <div class="checklist-item pending">
+                                    <span class="check-icon">○</span>
+                                    <span class="check-label">Smile</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-section timer-section">
+                            <div class="timer-label">SESSION TIMEOUT</div>
+                            <div id="session-timer" class="timer-value">20s</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STEP 3: RESULTS (SUCCESS / FAILURE) SECTION -->
+            <section id="result-section" class="card">
+                <div id="success-view" class="hidden">
+                    <div class="result-header success">
+                        <div class="success-ring">
+                            <svg class="checkmark-svg" viewBox="0 0 52 52">
+                                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
+                        <h2>Liveness Verified Successfully</h2>
+                        <p class="subtitle">Module 1 challenge cleared. User authenticated successfully.</p>
+                    </div>
+
+                    <div class="result-details-grid">
+                        <div class="aligned-face-card">
+                            <h4>Captured Face (Aligned)</h4>
+                            <div class="face-frame">
+                                <img id="aligned-face-img" src="" alt="Aligned Face">
+                            </div>
+                            <div class="face-meta">
+                                <span>256 × 256 px</span>
+                                <span>Module 1 Output</span>
+                            </div>
+                        </div>
+
+                        <div class="json-metadata-card">
+                            <h4>Auth & Session Output Metadata</h4>
+                            <div class="tab-buttons">
+                                <button class="tab-btn active" onclick="switchTab('auth-json')">Authentication Result</button>
+                                <button class="tab-btn" onclick="switchTab('session-json')">session.json (Module 1)</button>
+                            </div>
+                            <div class="tab-content">
+                                <pre id="auth-result-pre" class="active"><code class="language-json">Loading auth...</code></pre>
+                                <pre id="session-json-pre"><code class="language-json">Loading session...</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="result-actions">
+                        <button class="btn btn-secondary" onclick="restartAuth()">Verify New Session</button>
+                    </div>
+                </div>
+
+                <div id="failure-view" class="hidden">
+                    <div class="result-header failure">
+                        <div class="failure-ring">
+                            <span class="fail-cross">✕</span>
+                        </div>
+                        <h2 id="failure-title">Verification Failed</h2>
+                        <p id="failure-desc" class="subtitle">Liveness challenge could not be verified.</p>
+                    </div>
+
+
+
+                    <div class="result-actions">
+                        <button class="btn btn-primary" onclick="restartAuth()">Try Again</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="app-footer">
+            <p>Designed for Secure Access Control Systems. Zero-Trust Architecture © 2026</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

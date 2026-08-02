@@ -1,0 +1,9 @@
+{
+    "user_live": true,
+    "face_detected": true,
+    "face_aligned": true,
+    "challenge_score": 1.0,
+    "challenge_passed": true,
+    "aligned_face_path": "aligned_face.jpg",
+    "timestamp": "2026-07-22 20:49"
+}
