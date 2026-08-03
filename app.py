@@ -33,6 +33,17 @@ if not any(thread.name == flask_thread_name for thread in threading.enumerate())
 tunnel_url_file = os.path.join(OUTPUTS_DIR, "tunnel_url.txt")
 
 def run_ssh_tunnel_background():
+    # Ensure SSH key directory and keys exist for localhost.run to authenticate
+    ssh_dir = os.path.expanduser("~/.ssh")
+    os.makedirs(ssh_dir, exist_ok=True)
+    key_file = os.path.join(ssh_dir, "id_rsa")
+    if not os.path.exists(key_file):
+        try:
+            subprocess.run(["ssh-keygen", "-t", "rsa", "-N", "", "-f", key_file], check=True)
+            print("✓ SSH key generated successfully for localhost.run")
+        except Exception as e:
+            print(f"Failed to generate SSH key: {e}")
+
     # Remove previous tunnel URL file to ensure fresh detection
     if os.path.exists(tunnel_url_file):
         try:
