@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import re
+import urllib.request
 import threading
 import subprocess
 import streamlit as st
@@ -29,22 +30,24 @@ if not any(thread.name == flask_thread_name for thread in threading.enumerate())
     t.start()
     time.sleep(1)
 
-# 2. Background SSH Tunnel Manager (for Streamlit Cloud deployment)
+# Helper to fetch public IP of the host container/machine
+def get_public_ip():
+    try:
+        return urllib.request.urlopen('https://ident.me', timeout=5).read().decode('utf8').strip()
+    except Exception:
+        try:
+            return urllib.request.urlopen('https://ifconfig.me', timeout=5).read().decode('utf8').strip()
+        except Exception:
+            return "127.0.0.1"
+
+# Fetch public IP on boot
+if 'public_ip' not in st.session_state:
+    st.session_state.public_ip = get_public_ip()
+
+# 2. Background HTTP Tunnel Manager using localtunnel (bypasses cloud outbound SSH blocks)
 tunnel_url_file = os.path.join(OUTPUTS_DIR, "tunnel_url.txt")
 
-def run_ssh_tunnel_background():
-    # Ensure SSH key directory and keys exist for localhost.run to authenticate
-    ssh_dir = os.path.expanduser("~/.ssh")
-    os.makedirs(ssh_dir, exist_ok=True)
-    key_file = os.path.join(ssh_dir, "id_rsa")
-    if not os.path.exists(key_file):
-        try:
-            subprocess.run(["ssh-keygen", "-t", "rsa", "-N", "", "-f", key_file], check=True)
-            print("✓ SSH key generated successfully for localhost.run")
-        except Exception as e:
-            print(f"Failed to generate SSH key: {e}")
-
-    # Remove previous tunnel URL file to ensure fresh detection
+def run_http_tunnel_background():
     if os.path.exists(tunnel_url_file):
         try:
             os.remove(tunnel_url_file)
@@ -52,27 +55,27 @@ def run_ssh_tunnel_background():
             pass
 
     try:
+        # Run localtunnel using npx (HTTP-based, not blocked by Streamlit firewalls)
         proc = subprocess.Popen(
-            ["ssh", "-o", "StrictHostKeyChecking=no", "-R", "80:127.0.0.1:5001", "nokey@localhost.run"],
+            ["npx", "localtunnel", "--port", "5001"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True
         )
         for line in iter(proc.stdout.readline, ""):
-            if "tunneled with" in line:
-                match = re.search(r"https://\S+", line)
-                if match:
-                    url = match.group(0).strip().rstrip(".")
-                    with open(tunnel_url_file, "w") as f:
-                        f.write(url)
-                    print(f"✓ Public SSH Tunnel URL Active: {url}")
+            match = re.search(r"your url is:\s+(https?://\S+)", line)
+            if match:
+                url = match.group(1).strip().rstrip(".")
+                with open(tunnel_url_file, "w") as f:
+                    f.write(url)
+                print(f"✓ Public HTTP Tunnel URL Active: {url}")
     except Exception as e:
-        print(f"Failed to start background SSH tunnel: {e}")
+        print(f"Failed to start HTTP tunnel: {e}")
 
-ssh_thread_name = "SSHBackgroundTunnel"
-if not any(thread.name == ssh_thread_name for thread in threading.enumerate()):
-    t_ssh = threading.Thread(target=run_ssh_tunnel_background, name=ssh_thread_name, daemon=True)
-    t_ssh.start()
+tunnel_thread_name = "HTTPBackgroundTunnel"
+if not any(thread.name == tunnel_thread_name for thread in threading.enumerate()):
+    t_tunnel = threading.Thread(target=run_http_tunnel_background, name=tunnel_thread_name, daemon=True)
+    t_tunnel.start()
 
 # Streamlit Page Config
 st.set_page_config(
@@ -121,10 +124,17 @@ if app_page == "🔐 Face Authentication Portal":
     st.subheader("🔐 Biometric Verification Interface")
     st.markdown("Complete the user login and the randomized active liveness challenges.")
 
-    # Embed real-time webcam liveness frame capture loop via local/public URL
     iframe_url = get_iframe_url()
+    
+    # Render instructions if running on Streamlit Cloud
+    if "loca.lt" in iframe_url:
+        st.info(f"🔑 **Tunnel Endpoint IP Key**: `{st.session_state.public_ip}`")
+        st.markdown(
+            "*If the secure tunnel page below asks for a **Tunnel Password / Endpoint IP**, paste the key above and click **Click to Continue** to unlock your camera.*"
+        )
+    
+    # Embed webcam liveness frame capture loop
     st.components.v1.iframe(iframe_url, height=700, scrolling=True)
-
 
     # Automatically check and render verification results below if available
     final_result = load_json_file(os.path.join(OUTPUTS_DIR, "final_result.json"))
