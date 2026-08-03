@@ -147,8 +147,11 @@ if app_page == "🔐 Face Authentication Portal":
             "*If the secure tunnel page below asks for a **Tunnel Password / Endpoint IP**, paste the key above and click **Click to Continue** to unlock your camera.*"
         )
     
-    # Embed webcam liveness frame capture loop
-    st.components.v1.iframe(iframe_url, height=700, scrolling=True)
+    # Embed webcam liveness frame capture loop using modern st.iframe fallback
+    try:
+        st.iframe(iframe_url, height=700, scrolling=True)
+    except AttributeError:
+        st.components.v1.iframe(iframe_url, height=700, scrolling=True)
 
     # Automatically check and render verification results below if available
     final_result = load_json_file(os.path.join(OUTPUTS_DIR, "final_result.json"))
