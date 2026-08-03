@@ -9,6 +9,20 @@ import subprocess
 import streamlit as st
 from PIL import Image
 
+# DEBUG: Try importing mediapipe and catch the exact exception
+try:
+    import mediapipe as mp
+    print("DEBUG: Successfully imported mediapipe. Version:", mp.__version__)
+    print("DEBUG: mediapipe path:", mp.__file__)
+    # Try importing solutions explicitly
+    import mediapipe.solutions.face_mesh as fm
+    print("DEBUG: Successfully imported face_mesh.")
+except Exception as e:
+    import traceback
+    print("DEBUG: MediaPipe Import failed with exception:")
+    traceback.print_exc()
+
+
 # Setup directories
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUTS_DIR = os.path.join(PROJECT_DIR, "outputs")
