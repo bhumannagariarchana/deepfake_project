@@ -3,7 +3,7 @@
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-10b981?logo=github&logoColor=white)](https://github.com/bhumannagariarchana/deepfake_project)
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://deepfakeproject-xqdcfn8t9b8cspq7p83fsd.streamlit.app)
 
-🚀 **Live Deployment URL**: [deepfakeproject.streamlit.app](https://deepfakeproject-xqdcfn8t9b8cspq7p83fsd.streamlit.app)
+🚀 **Live Deployment URL**:[(https://deepfakeproject-xqdcfn8t9b8cspq7p83fsd.streamlit.app)](https://deepfakeproject-xqdcfn8t9b8cspq7p83fsd.streamlit.app)
 
 This project implements a complete binary **Liveness Verification (Module 1)** and **AI-Based Deepfake Detection (Module 2)** system designed for secure face-based access control.
 
